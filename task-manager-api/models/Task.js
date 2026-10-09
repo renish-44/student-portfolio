@@ -1,51 +1,36 @@
 const mongoose = require('mongoose');
 
 const TaskSchema = new mongoose.Schema({
+  // Practical 7: Task ownership ref
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
   title: { 
     type: String, 
-    required: [true, "Title is required"] // Practical 5: schema-level validation
+    required: [true, "Title is required"] 
   },
-  description: { 
-    type: String 
-  },
-  completed: { 
-    type: Boolean, 
-    default: false 
-  },
+  description: { type: String },
+  completed: { type: Boolean, default: false },
   priority: {
     type: String,
-    enum: { 
-      values: ["low", "medium", "high"], 
-      message: "Priority must be low, medium or high" 
-    },
+    enum: { values: ["low", "medium", "high"], message: "Priority must be low, medium or high" },
     default: "medium"
   },
-  createdAt: { 
-    type: Date, 
-    default: Date.now 
-  }
+  createdAt: { type: Date, default: Date.now }
 });
 
-// Practical 5: pre-save hook that trims whitespace from title
+// Hooks for trimming (from Practical 6)
 TaskSchema.pre('save', function (next) {
-  if (this.title) {
-    this.title = this.title.trim();
-  }
+  if (this.title) this.title = this.title.trim();
   next();
 });
 
-/* Practical 5 note: A pre('save') hook does not run on update queries like findByIdAndUpdate.
-   We can either use a pre('findOneAndUpdate') hook, or fetch the document, update it, and call save().
-   I chose to use pre('findOneAndUpdate') so standard update queries automatically trim the title 
-   without needing an extra database read just to save the document. */
 TaskSchema.pre('findOneAndUpdate', function (next) {
   const update = this.getUpdate();
-  if (update.title) {
-    update.title = update.title.trim();
-  }
-  if (update.$set && update.$set.title) {
-    update.$set.title = update.$set.title.trim();
-  }
+  if (update.title) update.title = update.title.trim();
+  if (update.$set && update.$set.title) update.$set.title = update.$set.title.trim();
   next();
 });
 

@@ -2,16 +2,17 @@ const Task = require('../models/Task');
 
 const getAllTasks = async (req, res, next) => {
   try {
-    const tasks = await Task.find(); // Practical 5: Task.find()
+    // Practical 7: filter by req.user.id
+    const tasks = await Task.find({ user: req.user.id });
     res.status(200).json({ success: true, data: tasks });
   } catch (error) {
-    next(error); // Practical 5: forwards errors with next(err)
+    next(error);
   }
 };
 
 const getTaskById = async (req, res, next) => {
   try {
-    const task = await Task.findById(req.params.id);
+    const task = await Task.findOne({ _id: req.params.id, user: req.user.id });
     if (!task) {
       return res.status(404).json({ success: false, error: 'Task not found' });
     }
@@ -23,7 +24,9 @@ const getTaskById = async (req, res, next) => {
 
 const createTask = async (req, res, next) => {
   try {
-    const newTask = await Task.create(req.body); // Practical 5: Task.create(req.body)
+    // Practical 7: set the user reference from the auth token payload
+    const taskData = { ...req.body, user: req.user.id };
+    const newTask = await Task.create(taskData);
     res.status(201).json({ success: true, data: newTask });
   } catch (error) {
     next(error);
@@ -32,10 +35,12 @@ const createTask = async (req, res, next) => {
 
 const updateTask = async (req, res, next) => {
   try {
-    const task = await Task.findByIdAndUpdate(req.params.id, req.body, { 
-      new: true, 
-      runValidators: true 
-    });
+    // Update only if both the task ID and the user ID match
+    const task = await Task.findOneAndUpdate(
+      { _id: req.params.id, user: req.user.id },
+      req.body,
+      { new: true, runValidators: true }
+    );
     if (!task) {
       return res.status(404).json({ success: false, error: 'Task not found' });
     }
@@ -47,24 +52,14 @@ const updateTask = async (req, res, next) => {
 
 const deleteTask = async (req, res, next) => {
   try {
-    const task = await Task.findByIdAndDelete(req.params.id);
+    const task = await Task.findOneAndDelete({ _id: req.params.id, user: req.user.id });
     if (!task) {
       return res.status(404).json({ success: false, error: 'Task not found' });
     }
-    res.status(200).json({ 
-      success: true, 
-      message: 'Task successfully deleted',
-      data: task 
-    });
+    res.status(200).json({ success: true, message: 'Task successfully deleted', data: task });
   } catch (error) {
     next(error);
   }
 };
 
-module.exports = {
-  getAllTasks,
-  getTaskById,
-  createTask,
-  updateTask,
-  deleteTask
-};
+module.exports = { getAllTasks, getTaskById, createTask, updateTask, deleteTask };
