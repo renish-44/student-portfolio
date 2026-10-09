@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import './NavBar.css';
 
-export default function NavBar({ theme, toggleTheme }) {
+export default function NavBar({ displayName }) {
   const [open, setOpen] = useState(false);
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ export default function NavBar({ theme, toggleTheme }) {
 
   return (
     <nav className="navbar">
-      <div className="navbar__brand">Alex Carter</div>
+      <div className="navbar__brand">{displayName}</div>
       <button className="navbar__hamburger" onClick={() => setOpen(!open)} aria-label="Toggle menu">
         ☰
       </button>

@@ -1,42 +1,17 @@
 import SectionWrapper from './SectionWrapper.jsx';
 import './About.css';
 
-function About() {
+export default function About({ profile, education }) {
   return (
-    <SectionWrapper
-      id="about"
-      title="About Me"
-      subtitle="A quick introduction"
-    >
-      <div className="about__grid">
-        <div className="about__text">
-          <p>
-            I am a final-year student who likes turning class ideas into working
-            projects. Most of my time goes into front-end work, but I also
-            enjoy solving problems with Python and SQL.
-          </p>
-          <p>
-            Outside of coursework I contribute to open source, write short
-            tutorials for my classmates, and take part in hackathons.
-          </p>
+    <SectionWrapper id="about" title="About Me">
+      <div className="about__container" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <p className="about__bio">{profile.bio}</p>
+        <div className="about__education" style={{ background: 'var(--card-bg)', padding: '1.5rem', borderRadius: '8px' }}>
+          <h3 style={{ marginBottom: '0.5rem', color: 'var(--theme-color)' }}>Education</h3>
+          <p><strong>{education.degree}</strong></p>
+          <p>{education.university} • {education.currentSem} (Expected {education.graduationYear})</p>
         </div>
-        <dl className="about__facts">
-          <div className="about__fact">
-            <dt>Focus</dt>
-            <dd>Front-end &amp; full-stack web</dd>
-          </div>
-          <div className="about__fact">
-            <dt>Based in</dt>
-            <dd>University campus</dd>
-          </div>
-          <div className="about__fact">
-            <dt>Goal</dt>
-            <dd>Software engineering internship</dd>
-          </div>
-        </dl>
       </div>
     </SectionWrapper>
   );
 }
-
-export default About;

@@ -1,52 +1,25 @@
-import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
 import './Header.css';
 
-const HERO_ACTIONS = [
-  { id: 'work', to: '/projects', label: 'View my work', variant: 'primary' },
-  { id: 'contact', to: '/contact', label: 'Get in touch', variant: 'ghost' },
-];
-
-function Header({ name }) {
+export default function Header({ profile }) {
   return (
-    <header
-      id="home"
-      className="header"
-      style={{
-        backgroundImage: `radial-gradient(
-            85% 70% at 50% 0%,
-            color-mix(in srgb, var(--theme-color) 42%, transparent),
-            transparent 62%
-          ),
-          linear-gradient(
-            180deg,
-            color-mix(in srgb, var(--theme-color) 15%, transparent) 0%,
-            transparent 55%
-          )`,
-      }}
-    >
-      <div className="header__inner">
-        <span className="header__accent" aria-hidden="true" />
-        <p className="header__eyebrow">Student Portfolio</p>
-        <h1 className="header__name">Hi, I&apos;m {name}</h1>
-        <p className="header__tagline">
-          Computer Science undergraduate who enjoys building useful web apps and
-          learning by doing.
-        </p>
-        <div className="header__actions">
-          {HERO_ACTIONS.map(({ id, to, label, variant }) => (
-            <Link key={id} to={to} className={`button button--${variant}`}>
-              {label}
-            </Link>
-          ))}
+    <header className="header">
+      <div className="header__content">
+        <img 
+          src={profile.photo} 
+          alt={`Profile photo of ${profile.name}`} 
+          className="header__photo" 
+          onError={(e) => e.target.style.display = 'none'} // Hides broken image if file missing
+        />
+        <h1 className="header__title">
+          Hi, I'm <span className="header__name">{profile.displayName}</span>
+        </h1>
+        <p className="header__headline">{profile.headline} | {profile.location}</p>
+        <div className="header__actions" style={{ marginTop: '1.5rem' }}>
+          <a href={profile.resumeLink} className="button button--primary" target="_blank" rel="noreferrer">
+            Download Resume
+          </a>
         </div>
       </div>
     </header>
   );
 }
-
-Header.propTypes = {
-  name: PropTypes.string.isRequired,
-};
-
-export default Header;
