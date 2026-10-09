@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect, useMemo, useCallback } from 'react';
 import * as api from '../api/api';
 
 export const AuthContext = createContext();
@@ -13,38 +13,34 @@ export function AuthProvider({ children }) {
     if (storedToken) {
       setToken(storedToken);
       api.setAuthToken(storedToken);
-      
-      api.getMe()
-        .then(userData => setUser(userData))
-        .catch(() => logout())
-        .finally(() => setLoading(false));
+      api.getMe().then(setUser).catch(logout).finally(() => setLoading(false));
     } else {
       setLoading(false);
     }
   }, []);
 
-  const login = async (email, password) => {
+  const login = useCallback(async (email, password) => {
     const res = await api.login({ email, password });
-    setUser(res.user);
-    setToken(res.token);
-    localStorage.setItem('token', res.token);
-    api.setAuthToken(res.token);
-  };
+    setUser(res.user); setToken(res.token);
+    localStorage.setItem('token', res.token); api.setAuthToken(res.token);
+  }, []);
 
-  const register = async (email, password) => {
+  const register = useCallback(async (email, password) => {
     await api.register({ email, password });
     await login(email, password);
-  };
+  }, [login]);
 
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem('token');
-    api.setAuthToken(null);
-  };
+  const logout = useCallback(() => {
+    setUser(null); setToken(null);
+    localStorage.removeItem('token'); api.setAuthToken(null);
+  }, []);
+
+  const contextValue = useMemo(() => ({
+    user, token, loading, login, register, logout
+  }), [user, token, loading, login, register, logout]);
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
