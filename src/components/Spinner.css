@@ -1,0 +1,25 @@
+.spinner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--border-color, #ccc);
+  border-top-color: var(--theme-color, #4f8cff);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+.spinner-label {
+  color: var(--text-color, #333);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

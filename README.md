@@ -14,6 +14,18 @@ A multi-page personal portfolio built with **React 18 + Vite** and **React Route
 
 ---
 
+## Projects page: GitHub API integration
+The Projects page natively fetches public repositories using the unauthenticated GitHub REST API (`https://api.github.com/users/<username>/repos`). 
+
+**Setup instructions:**
+1. Open `src/components/Projects.jsx`
+2. Change the `GITHUB_USERNAME` constant on line 8 to your own username.
+3. Reload the page.
+
+*Note on Rate Limiting: Unauthenticated GitHub API requests are limited to 60 requests per hour per IP. If you receive a 403 error during development, wait or connect to a different network.*
+
+---
+
 ## Routes Table
 
 | Path | Component | Description |

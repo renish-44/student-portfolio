@@ -1,9 +1,62 @@
-import PropTypes from 'prop-types';
+import { useState, useEffect } from 'react';
 import SectionWrapper from './SectionWrapper.jsx';
+import Spinner from './Spinner.jsx';
+import ErrorMessage from './ErrorMessage.jsx';
+import RepoList from './RepoList.jsx';
 import './Projects.css';
 
-function Projects({ projects }) {
-  /* Rendered on its own "/projects" route, so this section owns the page <h1>. */
+const GITHUB_USERNAME = 'renish-44';
+
+function Projects() {
+  const [repos, setRepos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    const fetchRepos = async () => {
+      setLoading(true);
+      setError(null);
+      
+      try {
+        const response = await fetch(`https://api.github.com/users/${GITHUB_USERNAME}/repos`, { signal });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        setRepos(data);
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+        
+        setError(err.message || 'Failed to load repositories. Please try again.');
+      } finally {
+        if (!signal.aborted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchRepos();
+
+    return () => {
+      controller.abort();
+    };
+  }, [retryCount]);
+
+  const handleRetry = () => {
+    setRetryCount((prev) => prev + 1);
+  };
+
+  const filteredRepos = repos.filter((repo) => 
+    repo.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <SectionWrapper
       id="projects"
@@ -11,48 +64,37 @@ function Projects({ projects }) {
       subtitle="Selected coursework and personal builds"
       titleTag="h1"
     >
-      {projects.length === 0 ? (
-        <p className="empty-state">Projects will be added soon.</p>
-      ) : (
-        <ul className="projects__grid">
-          {projects.map(({ id, title, description, tech, link }) => (
-            <li key={id} className="project-card">
-              <h2 className="project-card__title">{title}</h2>
-              <p className="project-card__description">{description}</p>
-              <ul className="project-card__tech">
-                {tech.map((item) => (
-                  <li key={item} className="project-card__tag">
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <a
-                className="project-card__link"
-                href={link}
-                target="_blank"
-                rel="noreferrer"
-                aria-label={`View project: ${title} (opens in new tab)`}
-              >
-                View project &rarr;
-              </a>
-            </li>
-          ))}
-        </ul>
-      )}
+      <div className="projects__search-container">
+        <label htmlFor="repo-search" className="projects__search-label">
+          Search repositories:
+        </label>
+        <input
+          id="repo-search"
+          type="search"
+          className="projects__search-input"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="e.g. react"
+          disabled={loading || error !== null}
+        />
+        {!loading && !error && (
+          <p className="projects__search-count">
+            Showing {filteredRepos.length} of {repos.length} repositories
+          </p>
+        )}
+      </div>
+
+      <div className="projects__content">
+        {loading ? (
+          <Spinner />
+        ) : error ? (
+          <ErrorMessage message={error} onRetry={handleRetry} />
+        ) : (
+          <RepoList repos={filteredRepos} />
+        )}
+      </div>
     </SectionWrapper>
   );
 }
-
-Projects.propTypes = {
-  projects: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      title: PropTypes.string.isRequired,
-      description: PropTypes.string.isRequired,
-      tech: PropTypes.arrayOf(PropTypes.string).isRequired,
-      link: PropTypes.string.isRequired,
-    })
-  ).isRequired,
-};
 
 export default Projects;

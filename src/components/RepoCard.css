@@ -1,0 +1,56 @@
+.repo-card {
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border-color, #eee);
+  border-radius: 8px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.repo-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.repo-card__title {
+  font-size: 1.25rem;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+.repo-card__title a {
+  text-decoration: none;
+  color: var(--theme-color, #4f8cff);
+}
+
+.repo-card__title a:hover {
+  text-decoration: underline;
+}
+
+.repo-card__description {
+  flex-grow: 1;
+  color: var(--text-color, #555);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.repo-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
+.repo-card__tag {
+  background: var(--bg-alt, #f0f0f0);
+  color: var(--text-color, #333);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.repo-card__stars {
+  font-weight: 500;
+  color: var(--text-color);
+}
