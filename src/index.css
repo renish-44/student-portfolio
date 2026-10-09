@@ -2,28 +2,45 @@
 
 /* =========================================================
    Design tokens
+
+   :root  → light theme (default)
+   .dark  → dark theme (class toggled on <html> by useTheme)
    ========================================================= */
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  /* Colors */
-  --color-bg: #0a0e17;
-  --color-surface: #101728;
-  --color-surface-2: #161f36;
-  --color-surface-3: #1c2742;
-  --color-text: #e9edf7;
-  --color-muted: #9aa5bd;
-  --color-border: #232d47;
-  --color-overlay: rgba(10, 14, 23, 0.82);
+  /* Surfaces */
+  --color-bg: #f4f7fc;
+  --color-surface: #ffffff;
+  --color-surface-2: #fbfcfe;
+  --color-surface-3: #eef3fb;
+
+  /* Text */
+  --color-text: #0f172a;
+  --color-muted: #55617a;
+
+  /* Lines & overlays */
+  --color-border: #dce3ef;
+  --color-overlay: rgba(255, 255, 255, 0.85);
 
   /* Accent: overridden inline on .app via the themeColor prop */
   --theme-color: #4f8cff;
-  --color-accent: var(--theme-color);
-  --color-on-accent: #071120;
+  --color-accent: color-mix(in srgb, var(--theme-color) 70%, #0b2f6b);
+  --color-on-accent: #ffffff;
+
+  /* Accent tints — follow the active --color-accent, so they follow the theme */
   --color-accent-10: color-mix(in srgb, var(--color-accent) 10%, transparent);
   --color-accent-16: color-mix(in srgb, var(--color-accent) 16%, transparent);
   --color-accent-30: color-mix(in srgb, var(--color-accent) 30%, transparent);
+
+  /* Status */
+  --color-success: #0f7a52;
+  --color-danger: #c0273a;
+  --color-warning: #a35a06;
+  --color-success-16: color-mix(in srgb, var(--color-success) 16%, transparent);
+  --color-danger-16: color-mix(in srgb, var(--color-danger) 16%, transparent);
+  --color-warning-16: color-mix(in srgb, var(--color-warning) 16%, transparent);
 
   /* Typography */
   --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto,
@@ -56,15 +73,45 @@
   --radius-md: 12px;
   --radius-lg: 18px;
   --radius-pill: 999px;
-  --shadow-sm: 0 1px 2px rgba(6, 10, 20, 0.45);
-  --shadow-md: 0 12px 26px -16px rgba(6, 10, 20, 0.8);
-  --shadow-lg: 0 26px 50px -24px rgba(6, 10, 20, 0.85);
+  --shadow-sm: 0 1px 2px rgba(6, 10, 20, 0.1);
+  --shadow-md: 0 12px 26px -16px rgba(6, 10, 20, 0.35);
+  --shadow-lg: 0 26px 50px -24px rgba(6, 10, 20, 0.35);
   --transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Layout */
   --nav-height: 66px;
   --container: 1120px;
   --gutter: clamp(1.15rem, 4vw, 2rem);
+}
+
+/* =========================================================
+   Dark theme — every token that depends on the palette
+   ========================================================= */
+
+.dark {
+  color-scheme: dark;
+
+  --color-bg: #0a0e17;
+  --color-surface: #101728;
+  --color-surface-2: #161f36;
+  --color-surface-3: #1c2742;
+
+  --color-text: #e9edf7;
+  --color-muted: #9aa5bd;
+
+  --color-border: #232d47;
+  --color-overlay: rgba(10, 14, 23, 0.82);
+
+  --color-accent: var(--theme-color);
+  --color-on-accent: #071120;
+
+  --color-success: #4ade9b;
+  --color-danger: #ff8b95;
+  --color-warning: #f5b544;
+
+  --shadow-sm: 0 1px 2px rgba(6, 10, 20, 0.45);
+  --shadow-md: 0 12px 26px -16px rgba(6, 10, 20, 0.8);
+  --shadow-lg: 0 26px 50px -24px rgba(6, 10, 20, 0.85);
 }
 
 /* =========================================================
@@ -132,6 +179,11 @@ button {
   font: inherit;
 }
 
+input,
+textarea {
+  font: inherit;
+}
+
 ::selection {
   background: var(--color-accent-30);
   color: var(--color-text);
@@ -155,6 +207,41 @@ button {
 
 .app > main {
   flex: 1;
+}
+
+/* =========================================================
+   Page transition (fade-in on route change)
+   ========================================================= */
+
+.page-transition {
+  animation: page-in 0.42s cubic-bezier(0.22, 0.8, 0.3, 1) both;
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* =========================================================
+   Theme switch — animated only while the toggle is running,
+   so day-to-day interactions stay snappy.
+   ========================================================= */
+
+@media (prefers-reduced-motion: no-preference) {
+  html.theme-animating *,
+  html.theme-animating *::before,
+  html.theme-animating *::after {
+    transition: background-color 0.35s ease, border-color 0.35s ease,
+      color 0.35s ease, box-shadow 0.35s ease, fill 0.35s ease !important;
+    transition-delay: 0s !important;
+  }
 }
 
 /* =========================================================

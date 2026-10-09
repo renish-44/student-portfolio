@@ -1,46 +1,102 @@
 import { renderToString } from 'react-dom/server';
 import React from 'react';
+import { StaticRouter } from 'react-router-dom/server';
 import App from '../src/App.jsx';
 
 const issues = [];
 console.error = (...args) => issues.push(args.map(String).join(' '));
 console.warn = (...args) => issues.push(args.map(String).join(' '));
 
-let html = '';
-try {
-  html = renderToString(
+/* Practical 2 renders a route table, so each URL is rendered on its own.
+   StaticRouter is the SSR-safe router: unlike MemoryRouter it runs no
+   useLayoutEffect, so server rendering stays warning-free. */
+const renderAt = (path) =>
+  renderToString(
     <React.StrictMode>
-      <App name="Alex Carter" themeColor="#4f8cff" />
+      <StaticRouter location={path}>
+        <App name="Alex Carter" themeColor="#4f8cff" />
+      </StaticRouter>
     </React.StrictMode>
   );
-} catch (err) {
-  issues.push(err.stack);
-}
 
-const footerStart = html.indexOf('<footer');
-const footerHtml = footerStart === -1 ? '' : html.slice(footerStart);
-const headerIndex = html.indexOf('<header');
-const mainIndex = html.indexOf('<main');
+const home = renderAt('/');
+const projects = renderAt('/projects');
+const contact = renderAt('/contact');
+const missing = renderAt('/definitely-not-a-page');
+
+const navHtml = (html) => {
+  const start = html.indexOf('<nav');
+  const end = html.indexOf('</nav>');
+  return start === -1 || end === -1 ? '' : html.slice(start, end);
+};
+
+const activeHref = (html) => {
+  const tag = html.match(/<a [^>]*aria-current="page"[^>]*>/);
+  const href = tag && tag[0].match(/href="([^"]*)"/);
+  return href ? href[1] : null;
+};
+
+const duplicateIds = (html) => {
+  const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]);
+  return ids.filter((value, index) => ids.indexOf(value) !== index);
+};
 
 const checks = [
-  ['banner <header> renders before <main>', headerIndex > -1 && headerIndex < mainIndex],
-  ['skip link present', /class="skip-link"[^>]*href="#main-content"/.test(html)],
-  ['main landmark with skip target', /<main[^>]*id="main-content"/.test(html)],
-  ['primary nav landmark', /<nav[^>]*aria-label="Primary"/.test(html)],
-  ['all 4 sections present', ['about', 'skills', 'projects', 'contact']
-    .every((id) => new RegExp(`<section[^>]*id="${id}"`).test(html))],
-  ['sections labelled by headings', (html.match(/aria-labelledby="[a-z-]+-title"/g) || []).length === 4],
-  ['unique heading ids', (html.match(/id="[a-z-]+-title"/g) || []).length === 4],
-  ['footer contains no <header> (spec)', !footerHtml.includes('<header')],
-  ['6 skill chips render', (html.match(/class="skill-chip"/g) || []).length === 6],
-  [
-    'skill levels not aria-labelled over visible text',
-    !/skill-chip__level[^>]*aria-label/.test(html),
-  ],
-  ['decorative accent hidden', /class="header__accent" aria-hidden="true"/.test(html)],
-  ['project links uniquely labelled', (html.match(/aria-label="View project: /g) || []).length === 3],
-  ['external links announce new tab', (html.match(/opens in new tab/g) || []).length === 2],
-  ['nav highlights active item', html.includes('aria-current="location"')],
+  ['skip link present', /class="skip-link"[^>]*href="#main-content"/.test(home)],
+  ['main landmark with skip target', /<main[^>]*id="main-content"/.test(home)],
+  ['primary nav landmark on every route', [home, projects, contact, missing]
+    .every((html) => /<nav[^>]*aria-label="Primary"/.test(html))],
+  ['footer on every route', [home, projects, contact, missing]
+    .every((html) => html.includes('<footer'))],
+
+  /* NavBar rebuilt with NavLink/Link - never hand-written # anchors */
+  ['nav links point at routes', ['/projects', '/contact']
+    .every((href) => navHtml(home).includes(`href="${href}"`))],
+  ['nav contains no "#..." anchors', !navHtml(home).includes('href="#')],
+  ['NavLink isActive marks Home active on "/"', activeHref(home) === '/'],
+  ['NavLink isActive marks Projects active on "/projects"', activeHref(projects) === '/projects'],
+  ['NavLink isActive marks Contact active on "/contact"', activeHref(contact) === '/contact'],
+
+  /* Home composes Header + About + Skills (and nothing else) */
+  ['home renders banner header', home.includes('<header') && home.includes('id="home"')],
+  ['home composes About', /<section[^>]*id="about"/.test(home)],
+  ['home composes Skills', /<section[^>]*id="skills"/.test(home)],
+  ['home does not render Projects', !home.includes('id="projects"')],
+  ['home does not render Contact form', !home.includes('id="contact-page"')],
+  ['6 skill chips render', (home.match(/class="skill-chip"/g) || []).length === 6],
+
+  /* Projects route */
+  ['projects page section present', /<section[^>]*id="projects"/.test(projects)],
+  ['projects page owns the h1', /<h1[^>]*id="projects-title"/.test(projects)],
+  ['3 project cards render', (projects.match(/class="project-card"/g) || []).length === 3],
+  ['project links uniquely labelled', (projects.match(/aria-label="View project: /g) || []).length === 3],
+
+  /* Contact route: controlled form, live preview, counter, help toggle */
+  ['contact page owns the h1', /<h1[^>]*id="contact-page-title"/.test(contact)],
+  ['contact form present', contact.includes('<form')],
+  ['3 controlled fields with value + onChange-backed ids',
+    ['contact-name', 'contact-email', 'contact-message']
+      .every((id) => contact.includes(`id="${id}"`))],
+  /* Inputs emit value="" as an attribute; React SSR renders a textarea's
+     value as its children instead. React also warns for any value field
+     missing onChange, so "console warnings: 0" below proves all 3 are
+     controlled. */
+  ['all 3 fields ship an initial value',
+    (contact.match(/value=""/g) || []).length === 2 &&
+      /<textarea[^>]*><\/textarea>/.test(contact)],
+  ['live message preview below the field', /<p class="contact__preview"/.test(contact)],
+  ['live character count "0 / 300"', contact.includes('0 / 300')],
+  ['help toggle present with aria-expanded', /aria-expanded="false"/.test(contact)],
+  ['help box hidden until the second useState flips', !contact.includes('id="contact-help"')],
+
+  /* 404 route */
+  ['catch-all renders custom 404', missing.includes('Page not found')],
+  ['404 offers a "Back to Home" Link', missing.includes('Back to Home') && missing.includes('href="/"')],
+  ['404 does not render the portfolio sections', !missing.includes('id="skills"')],
+
+  /* No duplicated ids on any route */
+  ['unique element ids on every route', [home, projects, contact, missing]
+    .every((html) => duplicateIds(html).length === 0)],
 ];
 
 let failed = 0;

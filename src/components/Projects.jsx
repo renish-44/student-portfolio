@@ -3,11 +3,13 @@ import SectionWrapper from './SectionWrapper.jsx';
 import './Projects.css';
 
 function Projects({ projects }) {
+  /* Rendered on its own "/projects" route, so this section owns the page <h1>. */
   return (
     <SectionWrapper
       id="projects"
       title="Projects"
       subtitle="Selected coursework and personal builds"
+      titleTag="h1"
     >
       {projects.length === 0 ? (
         <p className="empty-state">Projects will be added soon.</p>
@@ -15,7 +17,7 @@ function Projects({ projects }) {
         <ul className="projects__grid">
           {projects.map(({ id, title, description, tech, link }) => (
             <li key={id} className="project-card">
-              <h3 className="project-card__title">{title}</h3>
+              <h2 className="project-card__title">{title}</h2>
               <p className="project-card__description">{description}</p>
               <ul className="project-card__tech">
                 {tech.map((item) => (
@@ -27,7 +29,9 @@ function Projects({ projects }) {
               <a
                 className="project-card__link"
                 href={link}
-                aria-label={`View project: ${title}`}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`View project: ${title} (opens in new tab)`}
               >
                 View project &rarr;
               </a>

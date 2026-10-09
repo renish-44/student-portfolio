@@ -14,7 +14,7 @@ export const projectList = [
     description:
       'An event hub where students can join club activities and track upcoming workshops.',
     tech: ['React', 'Vite', 'LocalStorage'],
-    link: '#',
+    link: 'https://github.com/alexcarter/campus-connect',
   },
   {
     id: 'study-planner',
@@ -22,7 +22,7 @@ export const projectList = [
     description:
       'Weekly timetable builder with progress tracking for assignments and exam revision.',
     tech: ['JavaScript', 'CSS Grid', 'REST API'],
-    link: '#',
+    link: 'https://github.com/alexcarter/study-planner',
   },
   {
     id: 'recipe-finder',
@@ -30,6 +30,6 @@ export const projectList = [
     description:
       'Search app that filters recipes by ingredients and stores favourites per user.',
     tech: ['React', 'Context API', 'Fetch'],
-    link: '#',
+    link: 'https://github.com/alexcarter/recipe-finder',
   },
 ];

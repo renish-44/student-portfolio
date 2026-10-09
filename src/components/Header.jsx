@@ -1,9 +1,10 @@
 import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 import './Header.css';
 
 const HERO_ACTIONS = [
-  { id: 'work', href: '#projects', label: 'View my work', variant: 'primary' },
-  { id: 'contact', href: '#contact', label: 'Get in touch', variant: 'ghost' },
+  { id: 'work', to: '/projects', label: 'View my work', variant: 'primary' },
+  { id: 'contact', to: '/contact', label: 'Get in touch', variant: 'ghost' },
 ];
 
 function Header({ name }) {
@@ -33,10 +34,10 @@ function Header({ name }) {
           learning by doing.
         </p>
         <div className="header__actions">
-          {HERO_ACTIONS.map(({ id, href, label, variant }) => (
-            <a key={id} className={`button button--${variant}`} href={href}>
+          {HERO_ACTIONS.map(({ id, to, label, variant }) => (
+            <Link key={id} to={to} className={`button button--${variant}`}>
               {label}
-            </a>
+            </Link>
           ))}
         </div>
       </div>
